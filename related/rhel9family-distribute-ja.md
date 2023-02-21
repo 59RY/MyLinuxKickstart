@@ -82,8 +82,7 @@ sudo chroot ./tmp
 ▲上記コマンド実行後、作業用ディスクのrootユーザとなる。
 
 ```bash
-KERNELVER=`ls /boot/vmlinuz-* | cut -c 15-`
-dracut -f --kver $KERNELVER
+dracut -f --kver $(ls /boot/vmlinuz-* | cut -c 15-)
 exit
 ```
 
@@ -91,9 +90,7 @@ exit
 
 ```bash
 cd ./tmp
-sudo rm -rf ./var/lib/dnf/history*
 sudo find ./var/log/ -type f -name \* -not -name 'README' -exec cp -f /dev/null {} \;
-sudo rm -rf ./var/log/vmware* && sudo rm -rf ./var/log/dnf* && sudo rm -rf ./var/log/anaconda*
 sudo su
 ```
 
@@ -108,12 +105,14 @@ mkdir -p ../usr/share/kickstart-dist
 mv --force original-ks.cfg ../usr/share/kickstart-dist/CONFIG
 chmod 644 ../usr/share/kickstart-dist/CONFIG
 cd ../
-dd if=/dev/zero of=./zerofill bs=4K count=999999
+dd if=/dev/zero of=./zerofill bs=4K || :
 rm ./zerofill
 reboot
 ```
 
-※ddコマンドについては、意図的に空き容量を上回るサイズを指定し、空き容量を一時的に徹底的に無くす狙いがある。
+NOTE
+ - ddコマンド部分で「out-of-space」エラーがでることがあるが、これは意図的である。
+ - RHELの場合は、original-ks.cfgは削除する。`kickstart-dist` ディレクトリの作成もしない。
 
 ▲上記コマンド実行後、作業用インスタンスから切断され、作業用インスタンスが再起動される。
 
