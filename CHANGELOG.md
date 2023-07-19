@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.3.testing (----/--/--)
+
+Pre-Release: 2023-07-19
+
+- Add Another Configurations
+  - for:
+    - AlmaLinux 9 (UEFI)
+    - Rocky Linux 9 (UEFI)
+  - Modify from others:
+    - Specify install packages
+    - Adjust delete packages at the post script
+
 ## 0.2 (2023-07-19)
 
 - Modify:

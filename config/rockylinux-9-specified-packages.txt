@@ -1,0 +1,474 @@
+# Rocky Linux 9 Kickstart
+# for Build Smallest (but a little optimized for Japanese) Configuration
+# Version 0.3.testing
+# 
+# Requirement:
+#  - UEFI boot
+#  - Install disk is attached with NVMe Interface
+# 
+# Optimized for Japanese:
+#  - Timesource (NTP) is NICT, Japan
+#  - Installation source from mirror in Japan.
+#      (Only during installation.
+#       Does not affect behavior after installation)
+#  - Includes "glibc-langpack-ja" package.
+#    To be able to use on RHEL9, adds 1 configuration file
+# 
+# Author: Yutenji (yuta@59RY.jp, https://github.com/59RY)
+# 
+# If this kickstart works collectly, by now,
+# this kickstart is published at GitHub:
+#  - https://github.com/59RY/MyLinuxKickstart
+# 
+# In AWS Tokyo (ap-northeast-1) region,
+# you can find AMIs used this kickstart from here:
+#  - https://ap-northeast-1.console.aws.amazon.com/ec2/home?region=ap-northeast-1#Images:visibility=public-images;owner=708780754938;search=:Rocky%20Linux;v=3
+# Appeal: You can create more small volumes than official AMIs. (Starts from 1 or 2 GiB!)
+
+# Use text mode install
+text
+
+# Keyboard layouts
+keyboard --xlayouts='us'
+
+# System language
+lang en_US.UTF-8
+
+# (Not write a network information because of auto configuration)
+
+# NTP
+timesource --ntp-pool=ntp.nict.jp
+timesource --ntp-pool=ntp.jst.mfeed.ad.jp
+
+# System timezone
+timezone Etc/UTC --utc
+
+# Use network installation
+#   (This is required. Without this, netinst won't work)
+#   (If this link is broken,
+#    try "https://ftp.iij.ad.jp/pub/linux/rocky/$releasever/BaseOS/$basearch/os/" instead)
+url --url="https://ftp.udx.icscoe.jp/Linux/rocky/$releasever/BaseOS/$basearch/os/"
+
+# Select necessary packages at this section.
+%packages --nocore --excludedocs --ignoremissing --exclude-weakdeps
+NetworkManager
+NetworkManager-libnm
+acl
+alternatives
+audit
+audit-libs
+authselect
+authselect-libs
+basesystem
+bash
+bash-completion
+bzip2-libs
+c-ares
+ca-certificates
+checkpolicy
+chrony
+cloud-init
+cloud-utils-growpart
+coreutils
+coreutils-common
+cpio
+cracklib
+cracklib-dicts
+cronie
+cronie-anacron
+crontabs
+crypto-policies
+crypto-policies-scripts
+cryptsetup-libs
+curl
+cyrus-sasl-lib
+dbus
+dbus-broker
+dbus-common
+dbus-libs
+device-mapper
+device-mapper-libs
+dhcp-client
+dhcp-common
+diffutils
+dnf
+dnf-data
+dnf-plugins-core
+dracut
+dracut-config-generic
+e2fsprogs
+e2fsprogs-libs
+efi-filesystem
+efibootmgr
+efivar-libs
+elfutils-default-yama-scope
+elfutils-libelf
+elfutils-libs
+expat
+file
+file-libs
+filesystem
+findutils
+fuse-libs
+fwupd
+gawk
+gdbm-libs
+gdisk
+gettext
+gettext-libs
+glib2
+glibc
+glibc-common
+glibc-gconv-extra
+glibc-langpack-ja
+glibc-minimal-langpack
+gmp
+gnupg2
+gnutls
+gpgme
+grep
+groff-base
+grub2-common
+grub2-efi-aa64
+grub2-tools
+grub2-tools-minimal
+grubby
+gzip
+hostname
+hwdata
+ima-evm-utils
+inih
+initscripts-rename-device
+initscripts-service
+ipcalc
+iproute
+iputils
+irqbalance
+json-c
+json-glib
+kbd
+kbd-misc
+kernel
+kernel-core
+kernel-modules
+kernel-modules-core
+kernel-tools
+kernel-tools-libs
+keyutils-libs
+kmod
+kmod-libs
+kpartx
+krb5-libs
+less
+libacl
+libarchive
+libassuan
+libatomic
+libattr
+libbasicobjects
+libblkid
+libbpf
+libbrotli
+libcap
+libcap-ng
+libcbor
+libcollection
+libcom_err
+libcomps
+libcurl
+libdb
+libdhash
+libdnf
+libeconf
+libedit
+libevent
+libfdisk
+libffi
+libfido2
+libgcab1
+libgcc
+libgcrypt
+libgomp
+libgpg-error
+libgudev
+libgusb
+libidn2
+libini_config
+libjcat
+libkcapi
+libkcapi-hmaccalc
+libksba
+libldb
+libmnl
+libmodulemd
+libmount
+libndp
+libnghttp2
+libnl3
+libnvme
+libpath_utils
+libpipeline
+libpkgconf
+libpsl
+libpwquality
+libref_array
+librepo
+libreport-filesystem
+libseccomp
+libselinux
+libselinux-utils
+libsemanage
+libsepol
+libsigsegv
+libsmartcols
+libsolv
+libss
+libssh
+libssh-config
+libsss_certmap
+libsss_idmap
+libsss_nss_idmap
+libsss_sudo
+libstdc++
+libsysfs
+libtalloc
+libtasn1
+libtdb
+libtevent
+libunistring
+libusbx
+libuser
+libutempter
+libuuid
+libverto
+libxcrypt
+libxml2
+libxmlb
+libyaml
+libzstd
+lmdb-libs
+logrotate
+lshw
+lua-libs
+lz4-libs
+man-db
+mokutil
+mpfr
+ncurses
+ncurses-base
+ncurses-libs
+nettle
+npth
+numactl-libs
+nvme-cli
+openldap
+openldap-compat
+openssh
+openssh-clients
+openssh-server
+openssl
+openssl-libs
+os-prober
+p11-kit
+p11-kit-trust
+pam
+parted
+passwd
+pcre
+pcre2
+pcre2-syntax
+pigz
+pkgconf
+pkgconf-m4
+pkgconf-pkg-config
+policycoreutils
+polkit-libs
+popt
+prefixdevname
+procps-ng
+psmisc
+publicsuffix-list-dafsa
+python3
+python3-audit
+python3-babel
+python3-chardet
+python3-configobj
+python3-dateutil
+python3-dbus
+python3-distro
+python3-dnf
+python3-dnf-plugins-core
+python3-gpg
+python3-hawkey
+python3-idna
+python3-jinja2
+python3-jsonpatch
+python3-jsonpointer
+python3-libcomps
+python3-libdnf
+python3-libs
+python3-libselinux
+python3-libsemanage
+python3-markupsafe
+python3-netifaces
+python3-oauthlib
+python3-pip-wheel
+python3-policycoreutils
+python3-prettytable
+python3-pyserial
+python3-pysocks
+python3-pytz
+python3-pyyaml
+python3-requests
+python3-rpm
+python3-setools
+python3-setuptools
+python3-setuptools-wheel
+python3-six
+python3-systemd
+python3-urllib3
+readline
+rocky-gpg-keys
+rocky-release
+rocky-repos
+rootfiles
+rpm
+rpm-build-libs
+rpm-libs
+rpm-plugin-audit
+rpm-plugin-selinux
+rpm-sign-libs
+sed
+selinux-policy
+selinux-policy-targeted
+setup
+sg3_utils
+sg3_utils-libs
+shadow-utils
+shared-mime-info
+shim-aa64
+sqlite-libs
+sssd-client
+sssd-common
+sssd-kcm
+sudo
+systemd
+systemd-libs
+systemd-pam
+systemd-rpm-macros
+systemd-udev
+tpm2-tss
+tzdata
+userspace-rcu
+util-linux
+util-linux-core
+vim-minimal
+which
+xfsprogs
+xz
+xz-libs
+yum
+zlib
+%end
+
+# Run the Setup Agent on first boot
+firstboot --disable
+
+# Configure how to use the disk.
+# This is generated using Blivet version 3.4.0
+ignoredisk --only-use=nvme0n1
+clearpart --none --initlabel
+part /boot/efi --fstype="efi" --ondisk=nvme0n1 --size=50 --fsoptions="umask=0077,shortname=winnt"
+part / --fstype="xfs" --ondisk=nvme0n1 --grow
+
+# Modify Bootloader
+bootloader --timeout=1 --append="no_timer_check console=tty0 console=ttyS0,115200n8"
+
+# Add-on
+%addon com_redhat_kdump --disable
+%end
+
+# Root password
+#   (it's tentative, so this password will be deleted in the end)
+rootpw --plaintext rocky-rocky
+
+# Enforce SELinux
+selinux --enforcing
+
+# Disable firewalld
+firewall --disabled
+
+# Post-Installation Script
+%post
+
+# Remove unnecessary packages
+#   (May be mixed for aarch64 and x86_64.
+#    Some packages aren't installed already, but it's okay)
+dnf remove -y dosfstools firewalld* iptables iptables-libs iptables-nft iwl* nftables linux-firmware linux-firmware-whence python3-firewall python3-nftables
+
+# Remove the rescue ram
+#   (to reduce more disk usage.
+#    See also if you want to restore:
+#    https://github.com/59RY/MyLinuxKickstart/blob/main/related/rhel9family-notice.md)
+RESCUENAME=`ls /boot/vmlinuz-0-rescue-*`
+grubby --remove-kernel=$RESCUENAME
+rm --force /boot/initramfs-0-rescue-*.img
+rm --force /boot/vmlinuz-0-rescue-*
+
+# Re-enable locale-related environment variables on SSH
+#   (to use Japanese Locale)
+cat > /etc/ssh/sshd_config.d/50-languages.conf << EOF
+# Accept locale-related environment variables
+AcceptEnv LANG LC_CTYPE LC_NUMERIC LC_TIME LC_COLLATE LC_MONETARY LC_MESSAGES LC_PAPER LC_NAME LC_ADDRESS LC_TELEPHONE LC_MEASUREMENT LC_IDENTIFICATION LC_ALL LANGUAGE XMODIFIERS
+EOF
+chmod 600 /etc/ssh/sshd_config.d/50-languages.conf
+chown root:root /etc/ssh/sshd_config.d/50-languages.conf
+
+# Install necessary packages (Meticulously)
+dnf install -y cloud-init cloud-utils-growpart dracut-config-generic glibc-langpack-ja bash-completion --nogpgcheck --exclude=geolite*,lsfw
+
+# Edit Configuration about cloud-init
+sed -i -e 's!name: cloud-user!name: rocky!' /etc/cloud/cloud.cfg
+sed -i -e 's!gecos: Cloud User!gecos: Rocky Linux!' /etc/cloud/cloud.cfg
+
+# Regenerate initramfs
+dracut -f --kver $(ls /boot/vmlinuz-* | cut -c 15-)
+
+# Enable Services
+systemctl enable sshd.service
+systemctl enable cloud-init-local.service 
+systemctl enable cloud-init.service
+systemctl enable cloud-config.service
+systemctl enable cloud-final.service
+
+# Cleanup
+#   (Almost all logs will be deleted
+#    because of distribution images such as AWS AMIs.
+#    If you want to see logs, comment this section)
+dnf clean all
+rm --force --recursive /var/lib/dnf/history*
+rm --force /var/lib/rpm/__db*
+find /var/log/ -type f -name \* -not -name 'README' -exec cp -f /dev/null {} \;
+cat /dev/null > /etc/machine-id
+rm --force /etc/sysconfig/network-scripts/ifcfg-ens3
+rm --force /var/lib/systemd/random-seed
+rm --force /var/log/vmware*
+rm --force /var/log/dnf*
+rm --force /var/log/anaconda*
+rm --force /root/.bash_history 
+rm --force /root/.bash_logout
+rm --force /root/anaconda-ks.cfg
+
+# Delete root password
+passwd --delete root
+
+# Zerofill free space
+#   (to reclaim space from deleted files -> shrink the snapshot size.
+#    please don't worry that out-of-space error was expected)
+echo "Zerofill free space. Please don't worry that out-of-space error was expected."
+dd if=/dev/zero of=/zerofill bs=4K || :
+rm --force /zerofill
+%end
+
+# After Installation, turn off the instance
+poweroff
