@@ -23,7 +23,7 @@
 # In AWS Tokyo (ap-northeast-1) region,
 # you can find AMIs used this kickstart from here:
 #  - https://ap-northeast-1.console.aws.amazon.com/ec2/home?region=ap-northeast-1#Images:visibility=public-images;owner=708780754938;search=:Rocky%20Linux;v=3
-# Appeal: You can create more small volumes than official AMIs. (Starts from 1 or 2 GiB!)
+# Appeal: You can create more small volumes than official AMIs. (Starts from 2 GiB!)
 
 # Use text mode install
 text
@@ -50,7 +50,7 @@ timezone Etc/UTC --utc
 url --url="https://ftp.udx.icscoe.jp/Linux/rocky/$releasever/BaseOS/$basearch/os/"
 
 # Select necessary packages at this section.
-%packages --nocore --excludedocs --ignoremissing --exclude-weakdeps
+%packages --nocore --ignoremissing --exclude-weakdeps
 NetworkManager
 NetworkManager-libnm
 acl
