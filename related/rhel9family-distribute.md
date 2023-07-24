@@ -81,7 +81,7 @@ sudo chroot ./tmp
 ▲ After executing the above commands, you'll become the root user of the working disk.
 
 ```bash
-dracut -f --kver $(ls /boot/vmlinuz-* | cut -c 15-)
+dracut -f --regenerate-all
 exit
 ```
 
