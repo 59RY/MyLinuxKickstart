@@ -1,16 +1,31 @@
 # Changelog
 
-## 0.3.testing (----/--/--)
+## 0.3 (2023/08/01)
 
 Pre-Release: 2023-07-19
 
 - Add Another Configurations
   - for:
     - AlmaLinux 9 (UEFI)
+	- EuroLinux 9 (UEFI)
+	- RHEL 9 (UEFI, netinst)
     - Rocky Linux 9 (UEFI)
   - Modify from others:
     - Specify install packages
     - Adjust delete packages at the post script
+- Add:
+  - Pre-script (UEFI Only)
+- Modify:
+  - Adjust services (UEFI Only)
+  - How to detect using the disk (UEFI Only)
+  - Review of files to trancate, and how to implement it
+- Delete:
+  - MIRACLE LINUX 9 (UEFI) Configuration file
+    - Because MIRACLE LINUX is unlikely to release an ARM version
+  - Regenerating initramfs (UEFI Only)
+- Refactoring:
+  - dracut config option
+  - Delete DNF cache command
 
 ## 0.2 (2023-07-19)
 
