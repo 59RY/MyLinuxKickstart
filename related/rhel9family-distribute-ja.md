@@ -67,6 +67,8 @@ sudo dd if=disk.img of=/dev/nvme1n1 bs=1M
 
 ### 作業用ディスクに変更を加える
 
+#### 1. マウント作業
+
 ```bash
 mkdir ./tmp
 sudo mount /dev/nvme1n1p<PARTITION> ./tmp
@@ -78,14 +80,18 @@ sudo chroot ./tmp
   - UEFI環境の場合、通常`2`となる
   - BIOS環境の場合、通常`1`となる
 
-▲上記コマンド実行後、作業用ディスクのrootユーザとなる。
+#### 2. dracutの再作成
+
+作業用ディスクのrootユーザとして実行する。
 
 ```bash
 dracut -f --regenerate-all
 exit
 ```
 
-▲上記コマンド実行後、作業用インスタンスの標準ユーザに戻る。
+#### 3. 不要ファイルの削除(Part1)
+
+作業用インスタンスの標準ユーザに戻る。
 
 ```bash
 cd ./tmp
@@ -93,7 +99,9 @@ sudo find ./var/log/ -type f -name \* -not -name 'README' -exec cp -f /dev/null 
 sudo su
 ```
 
-▲上記コマンド実行後、作業用インスタンスのrootユーザとなる。
+#### 4. 不要ファイルの削除(Part2)
+
+作業用インスタンスのrootユーザとして実行する。
 
 ```bash
 cd root
@@ -106,12 +114,26 @@ chmod 644 ../usr/share/kickstart-dist/CONFIG
 cd ../
 dd if=/dev/zero of=./zerofill bs=4K || :
 rm ./zerofill
-reboot
 ```
 
 > **NOTE**
 > - ddコマンド部分で「out-of-space」エラーがでることがあるが、これは意図的である。
 > - RHELの場合は、original-ks.cfgは削除する。`kickstart-dist` ディレクトリの作成もしない。
+
+UEFI環境の場合は追加で以下を実行する。
+
+```bash
+mkdir ../tmp2
+mount /dev/nvme1n1p1 ../tmp2
+dd if=/dev/zero of=../tmp2/zerofill bs=512 || :
+rm ../tmp2/zerofill
+```
+
+作業完了後は再起動する。
+
+```bash
+reboot
+```
 
 ▲上記コマンド実行後、作業用インスタンスから切断され、作業用インスタンスが再起動される。
 
@@ -127,6 +149,41 @@ qemu-img convert -c -f raw -O qcow2 disk_new.img disk_new.qcow2
 - `<DISKSIZE>`: 元々作成していたディスクイメージの容量(MiB単位)
 
 ▲上記コマンド実行後に、SFTPなどを用いてディスクイメージをローカルやS3などに転送する。
+
+### ディスクイメージの容量(MiB)が1024の倍数では無かった場合
+
+1024の倍数になるように(1GiB単位でちょうどになるように)ディスクを拡張する。
+
+```bash
+sudo growpart /dev/nvme1n1 <PARTITION>
+sudo mount /dev/nvme1n1p<PARTITION> ./tmp
+sudo mount -o rbind /sys ./tmp/sys && sudo mount -o rbind /dev ./tmp/dev && sudo mount -t proc none ./tmp/proc
+sudo chroot ./tmp
+
+# root ユーザーになる
+xfs_growfs /dev/nvme1n1p<PARTITION>
+exit
+
+# 不要ファイルを削除する(標準ユーザー)
+cd ./tmp
+sudo find ./var/log/ -type f -name \* -not -name 'README' -exec cp -f /dev/null {} \;
+sudo su
+
+# 不要ファイルを削除する(ルートユーザー)
+cd root
+rm --force .bash_history
+rm --force .bash_logout
+cd ../
+dd if=/dev/zero of=./zerofill bs=4K || :
+rm ./zerofill
+
+# 再起動する
+reboot
+```
+
+- `<PARTITION>`: パーティション番号
+  - UEFI環境の場合、通常`2`となる
+  - BIOS環境の場合、通常`1`となる
 
 ### 作業用ディスクのデタッチ
 

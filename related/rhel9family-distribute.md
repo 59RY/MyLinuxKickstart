@@ -67,6 +67,8 @@ sudo dd if=disk.img of=/dev/nvme1n1 bs=1M
 
 ### Modifying the working disk
 
+#### 1. Mounting Operation
+
 ```bash
 mkdir ./tmp
 sudo mount /dev/nvme1n1p<PARTITION> ./tmp
@@ -78,14 +80,18 @@ sudo chroot ./tmp
   - For UEFI environments, it's usually `2`.
   - For BIOS environments, it's usually `1`.
 
-▲ After executing the above commands, you'll become the root user of the working disk.
+#### 2. Regenerate dracut
+
+Run as root user on the working disk.
 
 ```bash
 dracut -f --regenerate-all
 exit
 ```
 
-▲ After executing the above commands, you'll return to the standard user of the working instance.
+#### 3. delete unnecessary files (Part1)
+
+Return to the standard user of the working instance.
 
 ```bash
 cd ./tmp
@@ -93,7 +99,9 @@ sudo find ./var/log/ -type f -name \* -not -name 'README' -exec cp -f /dev/null 
 sudo su
 ```
 
-▲ After executing the above commands, you'll become the root user of the working instance.
+#### Delete unnecessary files (Part2)
+
+Execute as the root user of the working instance.
 
 ```bash
 cd root
@@ -106,12 +114,26 @@ chmod 644 ../usr/share/kickstart-dist/CONFIG
 cd ../
 dd if=/dev/zero of=./zerofill bs=4K || :
 rm ./zerofill
-reboot
 ```
 
 > **NOTE**
 > - An “out-of-space” error may occur during the dd command, but this is intentional.
 > - For RHEL, delete the original-ks.cfg and do not create the kickstart-dist directory.
+
+For UEFI environment, execute the following additional commands:
+
+```bash
+mkdir ../tmp2
+mount /dev/nvme1n1p1 ../tmp2
+dd if=/dev/zero of=../tmp2/zerofill bs=512 || :
+rm ../tmp2/zerofill
+```
+
+Reboot after these works are completed.
+
+```bash
+reboot
+```
 
 ▲ After executing the above commands, you'll be disconnected from the working instance, and the instance will restart.
 
@@ -127,6 +149,41 @@ qemu-img convert -c -f raw -O qcow2 disk_new.img disk_new.qcow2
 - `<DISKSIZE>`: The capacity of the originally created disk image (in MiB).
 
 ▲ After executing the above commands, transfer the disk image using SFTP or other methods to a local machine or S3.
+
+### If the disk image capacity (MiB) was not a multiple of 1024
+
+Expand the disk so that it's a multiple of 1024 (exactly in 1 GiB increments).
+
+```bash
+sudo growpart /dev/nvme1n1 <PARTITION>
+sudo mount /dev/nvme1n1p<PARTITION> ./tmp
+sudo mount -o rbind /sys ./tmp/sys && sudo mount -o rbind /dev ./tmp/dev && sudo mount -t proc none ./tmp/proc
+sudo chroot ./tmp
+
+# Become root user
+xfs_growfs /dev/nvme1n1p<PARTITION>
+exit
+
+# Delete unnecessary files (standard user)
+cd ./tmp
+sudo find ./var/log/ -type f -name \* -not -name 'README' -exec cp -f /dev/null {} \;
+sudo su
+
+# Delete unnecessary files (root user)
+cd root
+rm --force .bash_history
+rm --force .bash_logout
+cd ../
+dd if=/dev/zero of=./zerofill bs=4K || :
+rm ./zerofill
+
+# reboot
+reboot
+```
+
+- `<PARTITION>`: Partition number
+  - For UEFI environments, it's usually `2`.
+  - For BIOS environments, it's usually `1`.
 
 ### Detaching the working disk
 
