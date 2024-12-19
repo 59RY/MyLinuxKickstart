@@ -89,7 +89,7 @@ dracut -f --regenerate-all
 exit
 ```
 
-#### 3. delete unnecessary files (Part1)
+#### 3. Delete unnecessary files (Part1)
 
 Return to the standard user of the working instance.
 
@@ -99,7 +99,7 @@ sudo find ./var/log/ -type f -name \* -not -name 'README' -exec cp -f /dev/null 
 sudo su
 ```
 
-#### Delete unnecessary files (Part2)
+#### 4. Delete unnecessary files (Part2)
 
 Execute as the root user of the working instance.
 
