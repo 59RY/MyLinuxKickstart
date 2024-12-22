@@ -137,6 +137,11 @@ reboot
 
 ▲ After executing the above commands, you'll be disconnected from the working instance, and the instance will restart.
 
+### Check the disk number again with lsblk.
+
+In some cases, the working disk may be nvme0n1.
+The following procedures still assume nvme1n1, but if it is nvme0n1, replace it with nvme0n1.
+
 ### Writing changes from the working disk to the disk image
 
 Re-login to the working instance via SSH.
