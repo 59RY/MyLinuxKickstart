@@ -1,5 +1,21 @@
 # Changelog
 
+## 0.4 (2023/12/22)
+
+Pre-Release: 2024-12-22
+
+- Add Another Configurations
+  - for:
+    - AlmaLinux 10 Beta (UEFI)
+    - AlmaLinux Kitten 10 (UEFI)
+	- CentOS 10 Stream (UEFI)
+  - These files also review the list of packages to be installed.
+- Add:
+  - Added instructions on how to distribute RHEL9 family
+  - Notice for RHEL 10 Family
+- TBD (TODO):
+  - Include instructions on how to distribute RHEL10 family
+
 ## 0.3 (2023/08/01)
 
 Pre-Release: 2023-07-19
