@@ -2,18 +2,26 @@
 
 ## Table of Contents
 
-- Local Environment
+- **Local Environment**
   - Installation using Kickstart
   - Creating a disk image
-- AWS
+- **AWS**
   - Creating a working instance
-  - Creating and attaching a working disk
+  - Creating and attaching a working disk (1st)
   - Copying the disk image to the working instance
   - Writing the disk image to the working disk
   - Modifying the working disk
+    - 1. Mounting Operation
+    - 2. Regenerate dracut
+    - 3. Delete unnecessary files (Part1)
+    - 4. Delete unnecessary files (Part2)
+  - Check the disk number again with lsblk
   - Writing changes from the working disk to the disk image
-  - Detaching the working disk
-  - Creating a snapshot
+  - If the disk image capacity (MiB) was not a multiple of 1024
+  - Creating and attaching a working disk (2nd)
+  - Writing to the working disk
+  - Detaching the working disk (2nd)
+  - Creating a Snapshot from the Second Working Disk
   - Creating and publishing an AMI
 
 ## Local Environment
@@ -42,10 +50,10 @@
   ```
 - Make any other desired specifications and create the instance.
 
-### Creating and attaching a working disk
+### Creating and attaching a working disk (1st)
 
 - Create a working disk.
-  - This will be used later to write the disk image or create snapshots.
+  - This will be used later to write the disk image.
   - Disk size: Typically 2GiB
   - Use the same availability zone as the working instance.
 
@@ -77,8 +85,9 @@ sudo chroot ./tmp
 ```
 
 - `<PARTITION>`: Partition number
-  - For UEFI environments, it's usually `2`.
-  - For BIOS environments, it's usually `1`.
+  - For aarch64 environments, typically `2`.
+  - For x86_64 environments, typically `3` when both a biosboot partition and an EFI partition are created.
+    - If only one partition is created, the partition number may vary.
 
 #### 2. Regenerate dracut
 
@@ -112,11 +121,15 @@ mkdir -p ../usr/share/kickstart-dist
 mv --force original-ks.cfg ../usr/share/kickstart-dist/CONFIG
 chmod 644 ../usr/share/kickstart-dist/CONFIG
 cd ../
+xfs_fsr -v /dev/nvme1n1p1
+xfs_io -c "falloc -k -l $(($(df --output=avail /home/<initial instance user>/tmp | tail -n1) * 1024)) /home/<initial instance user>/tmp/dummyfile"
+rm /home/<initial instance user>/tmp/dummyfile
 dd if=/dev/zero of=./zerofill bs=4K || :
 rm ./zerofill
 ```
 
 > **NOTE**
+> - Replace `<initial instance user>` with the name of the initial user on the instance.
 > - An “out-of-space” error may occur during the dd command, but this is intentional.
 > - For RHEL, delete the original-ks.cfg and do not create the kickstart-dist directory.
 
@@ -187,24 +200,42 @@ reboot
 ```
 
 - `<PARTITION>`: Partition number
-  - For UEFI environments, it's usually `2`.
-  - For BIOS environments, it's usually `1`.
+  - For aarch64 environments, typically `2`.
+  - For x86_64 environments, typically `3` when both a biosboot partition and an EFI partition are created.
+    - If only one partition is created, the partition number may vary.
 
-### Detaching the working disk
+### Creating and attaching a working disk (2nd)
 
-Detach the working disk.
+If you create a snapshot using only the first working disk, you will incur EBS costs for the entire disk capacity.\
+To reduce costs, create an additional working disk and use that disk exclusively for snapshot creation.
 
-### Creating a snapshot
+- In the AWS Console, create a working disk.
+  - Disk size: Typically 2 GiB (match the capacity of the first disk).
+  - Use the same availability zone as the working instance.
+
+### Writing to the working disk
+
+Use [disk-write-batch.sh](./disk-write-batch.sh) to write to the working disk. Since the script runs interactively, execute it as follows:
+
+- Input source: `/dev/nvme1n1` (or specify the path to the disk_new.img file)
+- Output destination: `/dev/nvme2n1`
+- Number of blocks to copy: Enter the number of 512 KiB blocks (for example, for 2 GiB, enter `4096`)
+
+### Detaching the working disk (2nd)
+
+Detach the second working disk.
+
+### Creating a Snapshot from the Second Working Disk
 
 Create a snapshot from the working disk.
 
-- ※ For AMI distribution, use the naming convention `<OS Name> <Version> - <Architecture> (<YYYY-MM-DD>)` .
+- ※ For AMI distribution, use the naming convention `<OS Name> <Version> - <Architecture> (<YYYY/MM/DD>)` .
 
 ### Creating and publishing an AMI
 
 Create and publish an AMI based on the created snapshot.
 
-- The image name should follow the same convention as the snapshot: `<OS Name> <Version> - <Architecture> (<YYYY-MM-DD>)` .
+- The image name should follow the same convention as the snapshot: `<OS Name> <Version> - <Architecture> (<YYYY/MM/DD>)` .
 - Provide an appropriate description.
 - Select the appropriate architecture.
 - The root device name should be `/dev/xvda`.
